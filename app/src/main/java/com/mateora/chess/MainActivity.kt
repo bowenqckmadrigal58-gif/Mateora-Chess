@@ -3,10 +3,6 @@ package com.mateora.chess
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -41,7 +37,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MateoraChessGame() {
-    // وضعیت تخته شطرنج به صورت لیست قابل تغییر (Mutable) برای اعمال انیمیشن و تغییرات
     val boardState = remember {
         mutableStateListOf(
             mutableStateListOf("r", "n", "b", "q", "k", "b", "n", "r"),
@@ -55,7 +50,6 @@ fun MateoraChessGame() {
         )
     }
 
-    // نگهداری خانه انتخاب شده برای انیمیشن کلیک و حرکت
     var selectedSquare by remember { mutableStateOf<Pair<Int, Int>?>(null) }
     var gameMessage by remember { mutableStateOf("Mateora Tactical Engine Ready") }
 
@@ -91,7 +85,6 @@ fun MateoraChessGame() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // هدر برنامه
             Column(
                 modifier = Modifier.padding(top = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -111,7 +104,6 @@ fun MateoraChessGame() {
                 )
             }
 
-            // تخته شطرنج با قابلیت انیمیشن کلیک و انتخاب خانه
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -130,7 +122,6 @@ fun MateoraChessGame() {
                                 val symbol = getChessSymbol(piece)
                                 val isSelected = selectedSquare == Pair(row, col)
 
-                                // رنگ پس‌زمینه خانه (اگر انتخاب شده باشد رنگ متفاوتی می‌گیرد)
                                 val squareColor = when {
                                     isSelected -> DarkCrimson.copy(alpha = 0.7f)
                                     isDark -> BoardDark
@@ -149,7 +140,6 @@ fun MateoraChessGame() {
                                                     gameMessage = "Selected: Row $row, Col $col"
                                                 }
                                             } else {
-                                                // جابجایی مهره با انیمیشن ساده
                                                 val (fromRow, fromCol) = selectedSquare!!
                                                 boardState[row][col] = boardState[fromRow][fromCol]
                                                 boardState[fromRow][fromCol] = ""
@@ -159,12 +149,7 @@ fun MateoraChessGame() {
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    // انیمیشن نرم برای ظاهر شدن مهره‌ها
-                                    AnimatedVisibility(
-                                        visible = symbol.isNotEmpty(),
-                                        enter = fadeIn(animationSpec = tween(300)),
-                                        exit = fadeOut(animationSpec = tween(300))
-                                    ) {
+                                    if (symbol.isNotEmpty()) {
                                         Text(
                                             text = symbol,
                                             fontSize = 32.sp,
@@ -178,7 +163,6 @@ fun MateoraChessGame() {
                 }
             }
 
-            // دکمه ریست بازی
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -187,7 +171,6 @@ fun MateoraChessGame() {
             ) {
                 Button(
                     onClick = {
-                        // ریست کردن تخته
                         val initial = listOf(
                             listOf("r", "n", "b", "q", "k", "b", "n", "r"),
                             listOf("p", "p", "p", "p", "p", "p", "p", "p"),
