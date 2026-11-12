@@ -4,18 +4,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mateora.chess.ui.theme.*
-import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,7 +27,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MateoraApp()
+                    MateoraChessHome()
                 }
             }
         }
@@ -34,67 +35,37 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MateoraApp() {
-    var showSplash by remember { mutableStateOf(true) }
+fun MateoraChessHome() {
+    // چیدمان استاندارد تخته شطرنج
+    val boardState = listOf(
+        listOf("r", "n", "b", "q", "k", "b", "n", "r"),
+        listOf("p", "p", "p", "p", "p", "p", "p", "p"),
+        listOf("", "", "", "", "", "", "", ""),
+        listOf("", "", "", "", "", "", "", ""),
+        listOf("", "", "", "", "", "", "", ""),
+        listOf("", "", "", "", "", "", "", ""),
+        listOf("P", "P", "P", "P", "P", "P", "P", "P"),
+        listOf("R", "N", "B", "Q", "K", "B", "N", "R")
+    )
 
-    LaunchedEffect(Unit) {
-        delay(2500)
-        showSplash = false
-    }
-
-    if (showSplash) {
-        SplashScreen()
-    } else {
-        MainScreen()
-    }
-}
-
-@Composable
-fun SplashScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DeepBlack),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "MATEORA",
-            color = TextWhite,
-            fontSize = 42.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 8.sp
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = stringResource(id = R.string.brand_tagline),
-            color = SubtleRed,
-            fontSize = 14.sp,
-            letterSpacing = 1.sp
-        )
-    }
-}
-
-@Composable
-fun MainScreen() {
     Scaffold(
         bottomBar = {
             NavigationBar(containerColor = SurfaceDark) {
                 NavigationBarItem(
-                    icon = { Text("♙", color = TextWhite, fontSize = 24.sp) },
-                    label = { Text("Home", color = TextWhite) },
+                    icon = { Text("♙", color = TextWhite, fontSize = 22.sp) },
+                    label = { Text("Board", color = TextWhite) },
                     selected = true,
                     onClick = { }
                 )
                 NavigationBarItem(
-                    icon = { Text("♖", color = TextWhite, fontSize = 24.sp) },
-                    label = { Text("Play", color = TextWhite) },
+                    icon = { Text("⚡", color = TextWhite, fontSize = 22.sp) },
+                    label = { Text("Analysis", color = TextWhite) },
                     selected = false,
                     onClick = { }
                 )
                 NavigationBarItem(
-                    icon = { Text("♘", color = TextWhite, fontSize = 24.sp) },
-                    label = { Text("Repertoire", color = TextWhite) },
+                    icon = { Text("⚙", color = TextWhite, fontSize = 22.sp) },
+                    label = { Text("Settings", color = TextWhite) },
                     selected = false,
                     onClick = { }
                 )
@@ -107,13 +78,36 @@ fun MainScreen() {
                 .padding(paddingValues)
                 .background(DeepBlack),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
+            // هدر برنامه
+            Column(
+                modifier = Modifier.padding(top = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "MATEORA",
+                    color = TextWhite,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 4.sp
+                )
+                Text(
+                    text = "TACTICAL CHESS ENGINE",
+                    color = SubtleRed,
+                    fontSize = 11.sp,
+                    letterSpacing = 2.sp
+                )
+            }
+
+            // تخته شطرنج لوکس
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
                     .padding(16.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .border(2.dp, DarkCrimson, RoundedCornerShape(8.dp))
                     .background(BoardLight)
             ) {
                 Column(Modifier.fillMaxSize()) {
@@ -121,28 +115,57 @@ fun MainScreen() {
                         Row(Modifier.weight(1f)) {
                             for (col in 0 until 8) {
                                 val isDark = (row + col) % 2 != 0
+                                val piece = boardState[row][col]
+                                val symbol = getChessSymbol(piece)
+                                
                                 Box(
                                     modifier = Modifier
                                         .weight(1f)
                                         .fillMaxHeight()
-                                        .background(if (isDark) BoardDark else Color.Transparent)
-                                )
+                                        .background(if (isDark) BoardDark else BoardLight),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (symbol.isNotEmpty()) {
+                                        Text(
+                                            text = symbol,
+                                            fontSize = 32.sp,
+                                            color = if (piece[0].isUpperCase()) Color(0xFFFFFFFF) else Color(0xFF111111)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(32.dp))
-            Button(
-                onClick = { },
-                colors = ButtonDefaults.buttonColors(containerColor = DarkCrimson),
+
+            // بخش دکمه‌ها و کنترل بازی
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp)
-                    .height(56.dp)
+                    .padding(bottom = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Start Analysis", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Button(
+                    onClick = { },
+                    colors = ButtonDefaults.buttonColors(containerColor = DarkCrimson),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .height(50.dp)
+                ) {
+                    Text("New Tactical Game", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                }
             }
         }
+    }
+}
+
+fun getChessSymbol(piece: String): String {
+    return when (piece) {
+        "K" -> "♔"; "Q" -> "♕"; "R" -> "♖"; "B" -> "♗"; "N" -> "♘"; "P" -> "♙"
+        "k" -> "♚"; "q" -> "♛"; "r" -> "♜"; "b" -> "♝"; "n" -> "♞"; "p" -> "♟"
+        else -> ""
     }
 }
